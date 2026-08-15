@@ -34,7 +34,7 @@ export default function FeedCard({
     e.stopPropagation();
     const shareUrl = `${window.location.origin}/article/${item._id}`;
     navigator.clipboard.writeText(shareUrl);
-    showToast("Dispatch link copied to clipboard", "info");
+    showToast("Link copied to clipboard", "info");
   };
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
@@ -45,23 +45,25 @@ export default function FeedCard({
 
   if (viewMode === "list") {
     return (
-      <div className="feature-card" style={listStyles.card}>
+      <div className="feature-card feed-card-list">
         <div style={{ flexGrow: 1, paddingRight: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-            <span className="badge-pill">{item.source || "DISPATCH"}</span>
-            <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--color-ash)" }}>
-              {formattedDate} · {readTimeMinutes}m read
+            <span className="badge-pill">{item.source || "ARTICLE"}</span>
+            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
+              {formattedDate} · {readTimeMinutes} min read
             </span>
           </div>
 
-          <Link to={`/article/${item._id}`} style={{ textDecoration: "none" }}>
-            <h3 style={listStyles.title}>{item.title}</h3>
+          <Link to={`/article/${item._id}`}>
+            <h3 style={{ fontSize: "16px", fontWeight: 500, color: "var(--color-ink)", marginBottom: "4px" }}>
+              {item.title}
+            </h3>
           </Link>
 
-          <p style={listStyles.desc}>{item.description}</p>
+          <p className="body" style={{ margin: 0 }}>{item.description}</p>
         </div>
 
-        <div style={listStyles.actions}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
           <button
             onClick={handleBookmarkClick}
             className={`btn-icon ${isBookmarked ? "active" : ""}`}
@@ -95,48 +97,41 @@ export default function FeedCard({
     );
   }
 
-  // Grid View
   return (
     <div className="feature-card">
-      {/* Thumbnail */}
-      <Link to={`/article/${item._id}`} style={gridStyles.thumbLink}>
+      <Link to={`/article/${item._id}`} className="feed-card-thumb">
         {item.image && !imageError ? (
           <img
             src={item.image}
             alt={item.title}
             onError={() => setImageError(true)}
-            style={gridStyles.thumbImg}
           />
         ) : (
-          <div style={gridStyles.thumbFallback}>
-            <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-ash)" }}>
-              RESEND // {item.source ? item.source.toUpperCase() : "FEED"}
+          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
+              {item.source ? item.source.toUpperCase() : "ENGINEERING"}
             </span>
           </div>
         )}
       </Link>
 
-      {/* Meta Row */}
-      <div style={gridStyles.metaRow}>
-        <span className="badge-pill">{item.source || "DISPATCH"}</span>
-        <span style={{ fontSize: "11.5px", fontFamily: "var(--font-mono)", color: "var(--color-ash)" }}>
-          {readTimeMinutes}m read
+      <div className="feed-card-meta">
+        <span className="badge-pill">{item.source || "ARTICLE"}</span>
+        <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
+          {readTimeMinutes} min read
         </span>
       </div>
 
-      {/* Title */}
-      <Link to={`/article/${item._id}`} style={gridStyles.titleLink}>
-        <h3 style={gridStyles.title}>{item.title}</h3>
+      <Link to={`/article/${item._id}`}>
+        <h3 className="feed-card-title">{item.title}</h3>
       </Link>
 
-      {/* Excerpt */}
-      <p style={gridStyles.desc}>
-        {item.description || "System architecture analysis and runtime performance benchmark dispatch."}
+      <p className="feed-card-desc">
+        {item.description || "Read technical architecture notes and implementation details."}
       </p>
 
-      {/* Footer */}
-      <div style={gridStyles.cardFooter}>
-        <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--color-ash)" }}>
+      <div className="feed-card-footer">
+        <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
           {formattedDate}
         </span>
 
@@ -163,97 +158,3 @@ export default function FeedCard({
     </div>
   );
 }
-
-const gridStyles: Record<string, React.CSSProperties> = {
-  thumbLink: {
-    display: "block",
-    width: "100%",
-    height: "160px",
-    borderRadius: "var(--radius-sm)",
-    overflow: "hidden",
-    marginBottom: "16px",
-    backgroundColor: "var(--color-surface-deep)",
-    border: "1px solid var(--color-hairline)",
-  },
-  thumbImg: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
-  thumbFallback: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "var(--color-surface-deep)",
-  },
-  metaRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "12px",
-  },
-  titleLink: {
-    textDecoration: "none",
-    color: "inherit",
-    display: "block",
-    marginBottom: "8px",
-  },
-  title: {
-    fontFamily: "var(--font-body)",
-    fontSize: "16px",
-    fontWeight: 500,
-    lineHeight: 1.35,
-    color: "var(--color-ink)",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-  },
-  desc: {
-    fontSize: "13.5px",
-    color: "var(--color-charcoal)",
-    lineHeight: 1.5,
-    marginBottom: "18px",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-    flexGrow: 1,
-  },
-  cardFooter: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: "14px",
-    borderTop: "1px solid var(--color-hairline)",
-  },
-};
-
-const listStyles: Record<string, React.CSSProperties> = {
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "20px 24px",
-  },
-  title: {
-    fontFamily: "var(--font-body)",
-    fontSize: "16px",
-    fontWeight: 500,
-    color: "var(--color-ink)",
-    marginBottom: "4px",
-  },
-  desc: {
-    fontSize: "13.5px",
-    color: "var(--color-charcoal)",
-    lineHeight: 1.45,
-  },
-  actions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    flexShrink: 0,
-  },
-};

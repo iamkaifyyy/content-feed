@@ -9,7 +9,6 @@ export interface IBookmark extends Document {
   updatedAt: Date;
 }
 
-// Populated version with fully resolved references
 export interface IBookmarkPopulated extends Omit<IBookmark, "content"> {
   content: IContent;
 }
@@ -30,17 +29,16 @@ const bookmarkSchema = new Schema<IBookmark>(
   { timestamps: true }
 );
 
-// Compound unique index: a given user can only bookmark a given content item once.
-// This is enforced at the DATABASE level (not just app logic), so it holds even
-// under race conditions (e.g. a user double-clicking "bookmark" fast, or two
-// requests hitting different server instances at once).
 bookmarkSchema.index({ user: 1, content: 1 }, { unique: true });
-
-// Supports "GET /bookmarks" -> fetch all bookmarks for a user, most recent first.
 bookmarkSchema.index({ user: 1, createdAt: -1 });
 
-const Bookmark: Model<IBookmark> = mongoose.model<IBookmark>(
-  "Bookmark",
-  bookmarkSchema
-);
+bookmarkSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_doc, ret: any) => {
+    ret.id = ret._id;
+    return ret;
+  },
+});
+
+const Bookmark: Model<IBookmark> = mongoose.model<IBookmark>("Bookmark", bookmarkSchema);
 export default Bookmark;

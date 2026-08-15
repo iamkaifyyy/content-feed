@@ -14,28 +14,27 @@ const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+      required: true,
       trim: true,
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
-      unique: true, // creates a unique index -> enforces no duplicate accounts at the DB level
+      required: true,
+      unique: true,
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: true,
       minlength: 6,
-      select: false, // never return password by default on queries
+      select: false,
     },
   },
   { timestamps: true }
 );
 
-// Hash password before saving, only if it was modified (avoids re-hashing on unrelated updates)
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -48,6 +47,14 @@ userSchema.methods.comparePassword = async function (
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password as string);
 };
+
+userSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_doc, ret: any) => {
+    ret.id = ret._id;
+    return ret;
+  },
+});
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 export default User;

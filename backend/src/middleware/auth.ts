@@ -4,8 +4,6 @@ import asyncHandler from "../utils/asyncHandler";
 import AppError from "../utils/AppError";
 import User, { IUser } from "../models/User";
 
-// Extend Express Request to include the authenticated user.
-// This declaration merging lets every downstream handler access req.user typed as IUser.
 declare global {
   namespace Express {
     interface Request {
@@ -20,10 +18,8 @@ interface JwtPayload {
   exp: number;
 }
 
-// Verifies the JWT from the Authorization header and attaches the
-// authenticated user to req.user. Every "protected" route uses this.
 export const protect: RequestHandler = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     let token: string | undefined;
 
     const authHeader = req.headers.authorization;
@@ -32,7 +28,7 @@ export const protect: RequestHandler = asyncHandler(
     }
 
     if (!token) {
-      throw new AppError("Not authorized, no token provided", 401);
+      throw new AppError("Authentication required", 401);
     }
 
     let decoded: JwtPayload;
@@ -42,14 +38,12 @@ export const protect: RequestHandler = asyncHandler(
         process.env.JWT_SECRET as string
       ) as JwtPayload;
     } catch {
-      throw new AppError("Not authorized, token invalid or expired", 401);
+      throw new AppError("Invalid or expired session token", 401);
     }
 
-    // Fetch the user fresh from the DB (not just trusting the token payload)
-    // so that a deleted/deactivated user can't keep using an old valid token.
     const user = await User.findById(decoded.id);
     if (!user) {
-      throw new AppError("Not authorized, user no longer exists", 401);
+      throw new AppError("User account not found", 401);
     }
 
     req.user = user;

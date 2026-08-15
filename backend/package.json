@@ -1,7 +1,7 @@
 {
   "name": "content-feed-backend",
   "version": "1.0.0",
-  "description": "Backend API for Content Feed assignment (Foundertruth)",
+  "description": "REST API backend for Content Feed",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",

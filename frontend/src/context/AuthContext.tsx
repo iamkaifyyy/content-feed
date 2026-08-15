@@ -20,12 +20,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // On first load, restore session from localStorage
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
     if (token && storedUser) {
-      setUser(JSON.parse(storedUser) as User);
+      try {
+        setUser(JSON.parse(storedUser) as User);
+      } catch {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
     }
     setLoading(false);
   }, []);

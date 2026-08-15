@@ -12,10 +12,10 @@ export default function ArticlePage() {
   const navigate = useNavigate();
 
   const [item, setItem] = useState<FeedItem | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
-  const [bookmarked, setBookmarked] = useState<boolean>(false);
-  const [imageError, setImageError] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [bookmarked, setBookmarked] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -40,7 +40,7 @@ export default function ArticlePage() {
   const toggleBookmark = async (): Promise<void> => {
     if (!id) return;
     if (!user) {
-      showToast("Please sign in to save bookmarks", "info");
+      showToast("Please sign in to bookmark articles", "info");
       navigate("/login");
       return;
     }
@@ -54,7 +54,7 @@ export default function ArticlePage() {
         showToast("Bookmark removed", "info");
       } else {
         await api.addBookmark(id);
-        showToast("Saved to your bookmarks", "success");
+        showToast("Saved to bookmarks", "success");
       }
     } catch (err) {
       setBookmarked(previousState);
@@ -64,12 +64,12 @@ export default function ArticlePage() {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    showToast("Dispatch URL copied to clipboard", "info");
+    showToast("Link copied to clipboard", "info");
   };
 
   if (loading) {
     return (
-      <div style={styles.container}>
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 24px 80px" }}>
         <div className="skeleton" style={{ width: "80px", height: "28px", borderRadius: "var(--radius-md)", marginBottom: "32px" }} />
         <div className="skeleton" style={{ width: "85%", height: "44px", marginBottom: "16px" }} />
         <div className="skeleton" style={{ width: "40%", height: "18px", marginBottom: "32px" }} />
@@ -80,13 +80,13 @@ export default function ArticlePage() {
 
   if (error || !item) {
     return (
-      <div style={styles.container}>
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 24px 80px" }}>
         <div className="feature-card" style={{ padding: "48px 24px", textAlign: "center" }}>
           <h2 className="heading-md" style={{ marginBottom: "8px", color: "var(--color-primary)" }}>
-            Dispatch not found
+            Article not found
           </h2>
           <p className="body-md" style={{ marginBottom: "20px", color: "var(--color-mute)" }}>
-            {error || "The requested dispatch could not be found."}
+            {error || "The requested article could not be found."}
           </p>
           <Link to="/" className="btn-ghost">
             ← Back to Feed
@@ -103,10 +103,9 @@ export default function ArticlePage() {
   });
 
   return (
-    <div style={styles.container}>
-      {/* Top Nav */}
-      <div style={styles.topNavRow}>
-        <button onClick={() => navigate(-1)} className="btn-ghost" style={{ height: "32px", padding: "0 12px", fontSize: "12.5px" }}>
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 24px 80px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "36px" }}>
+        <button onClick={() => navigate(-1)} className="btn-ghost">
           ← Back
         </button>
 
@@ -130,55 +129,48 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      {/* Meta Header */}
-      <div style={styles.metaHeader}>
+      <div style={{ marginBottom: "36px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <span className="badge-pill">{item.source || "DISPATCH"}</span>
-          <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--color-ash)" }}>
+          <span className="badge-pill">{item.source || "ARTICLE"}</span>
+          <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
             {formattedDate}
           </span>
         </div>
 
-        <h1 className="display-xl" style={styles.articleTitle}>
+        <h1 className="display-xl" style={{ color: "var(--color-ink)", lineHeight: 1.15 }}>
           {item.title}
         </h1>
       </div>
 
-      {/* Hero Image */}
       {item.image && !imageError && (
-        <div style={styles.imageWrapper}>
+        <div style={{ width: "100%", height: "380px", borderRadius: "var(--radius-lg)", overflow: "hidden", marginBottom: "40px", backgroundColor: "var(--color-surface-deep)", border: "1px solid var(--color-hairline-strong)" }}>
           <img
             src={item.image}
             alt={item.title}
             onError={() => setImageError(true)}
-            style={styles.heroImg}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </div>
       )}
 
-      {/* Body Content */}
-      <div style={styles.contentBody}>
-        <div className="feature-card" style={styles.quoteBlock}>
-          <p className="body-lg" style={{ color: "var(--color-ink)", fontWeight: 400 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+        <div className="feature-card" style={{ borderLeft: "2px solid var(--color-primary)", padding: "24px 28px" }}>
+          <p className="body-lg" style={{ color: "var(--color-ink)", margin: 0 }}>
             {item.description}
           </p>
         </div>
 
-        <div style={styles.prose}>
+        <div style={{ color: "var(--color-body)", lineHeight: 1.7 }}>
           <p className="body-md">
-            This technical dispatch explores foundational concepts, trade-offs, and operational best practices in modern backend systems and distributed services. Resend's architecture pairs low-latency email pipelines with high-throughput event processing and strict delivery guarantees.
-          </p>
-          <p className="body-md" style={{ marginTop: "16px" }}>
-            For in-depth analysis, benchmark figures, and comprehensive code samples referenced in this dispatch, please review the complete source publication provided directly by <strong>{item.source}</strong>.
+            This article explores technical architecture concepts, operational considerations, and trade-offs in modern software engineering. Review the original source below for full discussions, benchmarks, and referenced code repositories.
           </p>
         </div>
 
-        {/* Source CTA Callout */}
-        <div className="feature-card" style={styles.sourceCallout}>
+        <div className="feature-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", marginTop: "20px", padding: "24px 28px" }}>
           <div>
-            <span style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--color-ash)" }}>PUBLISHED BY</span>
+            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>PUBLISHED BY</span>
             <h3 style={{ margin: "4px 0", fontSize: "17px", fontWeight: 500 }}>{item.source}</h3>
-            <p className="caption" style={{ color: "var(--color-mute)" }}>{formattedDate}</p>
+            <p className="caption">{formattedDate}</p>
           </div>
 
           <a
@@ -186,70 +178,11 @@ export default function ArticlePage() {
             target="_blank"
             rel="noreferrer"
             className="btn-primary"
-            style={{ textDecoration: "none" }}
           >
-            Visit Original Source ↗
+            Read Full Article ↗
           </a>
         </div>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "48px 24px 80px",
-  },
-  topNavRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "36px",
-  },
-  metaHeader: {
-    marginBottom: "36px",
-  },
-  articleTitle: {
-    color: "var(--color-ink)",
-    lineHeight: 1.05,
-  },
-  imageWrapper: {
-    width: "100%",
-    height: "380px",
-    borderRadius: "var(--radius-lg)",
-    overflow: "hidden",
-    marginBottom: "40px",
-    backgroundColor: "var(--color-surface-deep)",
-    border: "1px solid var(--color-hairline-strong)",
-  },
-  heroImg: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
-  contentBody: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "28px",
-  },
-  quoteBlock: {
-    backgroundColor: "var(--color-surface-card)",
-    borderLeft: "2px solid var(--color-primary)",
-    padding: "24px 28px",
-  },
-  prose: {
-    color: "var(--color-body)",
-    lineHeight: 1.7,
-  },
-  sourceCallout: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "16px",
-    marginTop: "20px",
-    padding: "24px 28px",
-  },
-};

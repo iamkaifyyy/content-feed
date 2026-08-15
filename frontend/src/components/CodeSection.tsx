@@ -6,87 +6,68 @@ export default function CodeSection() {
   const { showToast } = useToast();
 
   const snippets = {
-    node: `import { ResendFeed } from 'content-feed';
+    node: `const res = await fetch("http://localhost:5001/api/v1/feed?limit=10&sort=latest");
+const { data, pagination } = await res.json();
 
-const feed = new ResendFeed({ apiKey: process.env.FEED_API_KEY });
+console.log(\`Page \${pagination.page} of \${pagination.totalPages}\`);
+data.forEach(item => console.log(\`[\${item.source}] \${item.title}\`));`,
+    python: `import requests
 
-const { data, error } = await feed.dispatches.list({
-  limit: 10,
-  sort: 'latest',
-});
+res = requests.get("http://localhost:5001/api/v1/feed", params={"limit": 10, "sort": "latest"})
+payload = res.json()
 
-console.log(data);`,
-    python: `from content_feed import Client
-
-client = Client(api_key="FEED_API_KEY")
-
-dispatches = client.feed.list(
-    page=1,
-    limit=10,
-    sort="latest"
-)
-
-for item in dispatches.data:
-    print(f"[{item.source}] {item.title}")`,
+for item in payload.get("data", []):
+    print(f"[{item['source']}] {item['title']}")`,
     curl: `curl -X GET "http://localhost:5001/api/v1/feed?limit=10&sort=latest" \\
-  -H "Authorization: Bearer re_123456789" \\
-  -H "Content-Type: application/json"`,
+  -H "Accept: application/json"`,
   };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(snippets[activeTab]);
-    showToast("SDK code copied to clipboard", "success");
+    showToast("Code copied to clipboard", "success");
   };
 
   return (
-    <section id="code-section" className="atmospheric-glow-blue" style={styles.wrapper}>
-      <div style={styles.header}>
+    <section id="code-section" className="atmospheric-glow-blue" style={{ margin: "80px 0 64px", paddingTop: "48px", borderTop: "1px solid var(--color-hairline)" }}>
+      <div style={{ marginBottom: "36px" }}>
         <span className="badge-pill" style={{ marginBottom: "12px" }}>
-          <span>FIRST-CLASS DEVELOPER EXPERIENCE</span>
+          <span>REST API</span>
         </span>
         <h2 className="display-xl" style={{ color: "var(--color-ink)", marginBottom: "12px" }}>
-          Integrate this weekend.
+          Simple Integration
         </h2>
         <p className="body-lg" style={{ color: "var(--color-charcoal)", maxWidth: "580px" }}>
-          Clean SDKs, end-to-end type safety, and instant REST endpoints designed to fit seamlessly into modern applications.
+          Query the paginated feed, inspect individual articles, and manage user bookmarks via standard REST endpoints.
         </p>
       </div>
 
-      {/* Resend Code Window */}
-      <div className="code-window" style={styles.windowWrapper}>
-        {/* Top Traffic Lights Chrome */}
-        <div style={styles.chromeRow}>
-          <div style={styles.dotsRow}>
-            <span style={{ ...styles.dot, backgroundColor: "var(--color-accent-red)" }} />
-            <span style={{ ...styles.dot, backgroundColor: "var(--color-accent-yellow)" }} />
-            <span style={{ ...styles.dot, backgroundColor: "var(--color-accent-green)" }} />
+      <div className="code-window" style={{ maxWidth: "860px", margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "16px", borderBottom: "1px solid var(--color-hairline)" }}>
+          <div style={{ display: "flex", gap: "6px" }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "var(--color-accent-red)" }} />
+            <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "var(--color-accent-yellow)" }} />
+            <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "var(--color-accent-green)" }} />
           </div>
 
-          <div style={styles.tabGroup}>
+          <div style={{ display: "flex", gap: "4px", backgroundColor: "var(--color-surface-card)", padding: "3px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-hairline)" }}>
             <button
               onClick={() => setActiveTab("node")}
-              style={{
-                ...styles.tabBtn,
-                ...(activeTab === "node" ? styles.tabActive : {}),
-              }}
+              className={`sub-nav-pill ${activeTab === "node" ? "active" : ""}`}
+              style={{ fontSize: "12px", fontFamily: "var(--font-mono)", padding: "4px 10px" }}
             >
               Node.js
             </button>
             <button
               onClick={() => setActiveTab("python")}
-              style={{
-                ...styles.tabBtn,
-                ...(activeTab === "python" ? styles.tabActive : {}),
-              }}
+              className={`sub-nav-pill ${activeTab === "python" ? "active" : ""}`}
+              style={{ fontSize: "12px", fontFamily: "var(--font-mono)", padding: "4px 10px" }}
             >
               Python
             </button>
             <button
               onClick={() => setActiveTab("curl")}
-              style={{
-                ...styles.tabBtn,
-                ...(activeTab === "curl" ? styles.tabActive : {}),
-              }}
+              className={`sub-nav-pill ${activeTab === "curl" ? "active" : ""}`}
+              style={{ fontSize: "12px", fontFamily: "var(--font-mono)", padding: "4px 10px" }}
             >
               cURL
             </button>
@@ -97,9 +78,8 @@ for item in dispatches.data:
           </button>
         </div>
 
-        {/* Code Content */}
-        <div style={styles.codeBody}>
-          <pre style={styles.preCode}>
+        <div style={{ padding: "20px 8px 8px", overflowX: "auto" }}>
+          <pre style={{ margin: 0, fontSize: "13px", lineHeight: 1.65, color: "var(--color-body)" }}>
             <code className="code-font">{snippets[activeTab]}</code>
           </pre>
         </div>
@@ -107,65 +87,3 @@ for item in dispatches.data:
     </section>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  wrapper: {
-    margin: "80px 0 64px",
-    paddingTop: "48px",
-    borderTop: "1px solid var(--color-hairline)",
-  },
-  header: {
-    marginBottom: "36px",
-  },
-  windowWrapper: {
-    maxWidth: "860px",
-    margin: "0 auto",
-  },
-  chromeRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: "16px",
-    borderBottom: "1px solid var(--color-hairline)",
-  },
-  dotsRow: {
-    display: "flex",
-    gap: "6px",
-  },
-  dot: {
-    width: "10px",
-    height: "10px",
-    borderRadius: "50%",
-  },
-  tabGroup: {
-    display: "flex",
-    gap: "4px",
-    backgroundColor: "var(--color-surface-card)",
-    padding: "3px",
-    borderRadius: "var(--radius-sm)",
-    border: "1px solid var(--color-hairline)",
-  },
-  tabBtn: {
-    background: "transparent",
-    color: "var(--color-mute)",
-    fontSize: "12px",
-    fontFamily: "var(--font-mono)",
-    padding: "4px 10px",
-    borderRadius: "var(--radius-xs)",
-    cursor: "pointer",
-  },
-  tabActive: {
-    backgroundColor: "var(--color-surface-elevated)",
-    color: "var(--color-ink)",
-  },
-  codeBody: {
-    padding: "20px 8px 8px",
-    overflowX: "auto",
-  },
-  preCode: {
-    margin: 0,
-    fontSize: "13px",
-    lineHeight: 1.65,
-    color: "var(--color-body)",
-  },
-};

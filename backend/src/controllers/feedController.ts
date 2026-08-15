@@ -10,26 +10,16 @@ interface FeedQuery {
   sort?: string;
 }
 
-// @route  GET /api/v1/feed?page=1&limit=20&sort=latest
-// @access Public
 export const getFeed = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const query = req.query as FeedQuery;
 
-  let page = Math.max(parseInt(query.page ?? "1", 10) || 1, 1);
-  let limit = Math.min(Math.max(parseInt(query.limit ?? "20", 10) || 20, 1), 100); // cap at 100
-  const sort = query.sort ?? "latest";
-
-  const sortMap: Record<string, Record<string, 1 | -1>> = {
-    latest: { publishedAt: -1 },
-    oldest: { publishedAt: 1 },
-  };
-  const sortQuery = sortMap[sort] ?? sortMap.latest;
-
+  const page = Math.max(parseInt(query.page ?? "1", 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(query.limit ?? "20", 10) || 20, 1), 100);
+  const sort = query.sort === "oldest" ? 1 : -1;
   const skip = (page - 1) * limit;
 
-  // Run the query and the count in parallel rather than sequentially.
   const [items, totalItems] = await Promise.all([
-    Content.find().sort(sortQuery).skip(skip).limit(limit),
+    Content.find().sort({ publishedAt: sort }).skip(skip).limit(limit),
     Content.countDocuments(),
   ]);
 
@@ -49,12 +39,10 @@ export const getFeed = asyncHandler(async (req: Request, res: Response): Promise
   });
 });
 
-// @route  GET /api/v1/feed/:id
-// @access Public
 export const getFeedItem = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError("Invalid content ID", 400);
   }
 

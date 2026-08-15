@@ -1,6 +1,3 @@
-// Shared domain types used across all pages and components.
-// Mirrors the shapes returned by the backend API.
-
 export interface FeedItem {
   _id: string;
   title: string;

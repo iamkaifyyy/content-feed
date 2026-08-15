@@ -1,54 +1,78 @@
-# Content Feed — Backend + Frontend
+# Content Feed
 
-A content feed platform where users can browse articles, view individual items, and (when logged in) bookmark
-content. Built for the Foundertruth Backend Engineering Internship assignment.
-
-**Stack:** Node.js, Express, TypeScript, MongoDB (Mongoose), JWT auth, bcrypt · React 18, Vite, TypeScript, React Router v6 frontend.
+A full-stack content aggregation and reading list application built with Node.js, Express, TypeScript, MongoDB, React 18, and Vite.
 
 ---
 
-## 1. Setup — how to run locally
+## 1. Setup — How to Install and Run Locally
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB running locally, or a MongoDB Atlas connection string
+- MongoDB instance running locally on port `27017` or a MongoDB Atlas URI
 
-### Backend
-```bash
-cd backend
-npm install
-cp .env.example .env      # fill in MONGODB_URI (e.g. mongodb://127.0.0.1:27017/content-feed)
-npm run seed              # populates 30 sample content items
-npm run dev               # starts TypeScript dev server on http://localhost:5001
-```
+### Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create local environment file from example:
+   ```bash
+   cp .env.example .env
+   ```
+4. Seed the database with 24 sample engineering articles:
+   ```bash
+   npm run seed
+   ```
+5. Start the backend development server:
+   ```bash
+   npm run dev
+   ```
+   The backend API will run on `http://localhost:5001`.
 
-### Frontend
-```bash
-cd frontend
-npm install
-cp .env.example .env      # VITE_API_URL should point at the backend (http://localhost:5001/api/v1)
-npm run dev               # starts Vite React dev server on http://localhost:3000
-```
-
-Open `http://localhost:3000` — browse the feed, register/login, and bookmark articles.
+### Frontend Setup
+1. Open a new terminal and navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create local environment file:
+   ```bash
+   cp .env.example .env
+   ```
+4. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000` in your browser.
 
 ---
 
 ## 2. Environment Variables
 
-**Backend (`backend/.env`)**
-| Variable | Purpose |
-|---|---|
-| `PORT` | Port the Express server listens on (default: `5001`) |
-| `MONGODB_URI` | MongoDB connection string |
-| `JWT_SECRET` | Secret used to sign/verify JWTs — must be long and random |
-| `JWT_EXPIRES_IN` | Token lifetime (e.g. `7d`) |
-| `CLIENT_URL` | Allowed CORS origin (the frontend's URL: `http://localhost:3000`) |
+### Backend (`backend/.env`)
 
-**Frontend (`frontend/.env`)**
-| Variable | Purpose |
-|---|---|
-| `VITE_API_URL` | Base URL of the backend API, e.g. `http://localhost:5001/api/v1` |
+| Variable | Description | Example / Default |
+|---|---|---|
+| `PORT` | Port for the Express server to listen on | `5001` |
+| `NODE_ENV` | Environment mode (`development`, `production`, `test`) | `development` |
+| `MONGODB_URI` | MongoDB connection URI string | `mongodb://127.0.0.1:27017/content-feed` |
+| `JWT_SECRET` | Secret key used to sign and verify JSON Web Tokens | `your_super_secret_jwt_key_change_me` |
+| `JWT_EXPIRES_IN` | Token expiration lifetime | `7d` |
+| `CLIENT_URL` | Allowed origin for CORS headers | `http://localhost:3000` |
+| `EXTERNAL_API_KEY` | Optional key for external content API integrations | `your_external_api_key_here` |
+
+### Frontend (`frontend/.env`)
+
+| Variable | Description | Example / Default |
+|---|---|---|
+| `VITE_API_URL` | Base endpoint URL for the backend API | `http://localhost:5001/api/v1` |
 
 ---
 
@@ -56,115 +80,252 @@ Open `http://localhost:3000` — browse the feed, register/login, and bookmark a
 
 Base URL: `/api/v1`
 
-### Auth
-| Method | Endpoint | Auth | Body |
-|---|---|---|---|
-| POST | `/auth/register` | Public | `{ name, email, password }` |
-| POST | `/auth/login` | Public | `{ email, password }` |
+### Authentication Endpoints
 
-Both return `{ success, data: { user, token } }` on success.
-
-### Feed
-| Method | Endpoint | Auth | Notes |
-|---|---|---|---|
-| GET | `/feed?page=1&limit=20&sort=latest` | Public | `sort` supports `latest` \| `oldest` |
-| GET | `/feed/:id` | Public | Single content item |
-
-Example response for `GET /feed`:
-```json
-{
-  "success": true,
-  "data": [ { "_id": "...", "title": "...", "publishedAt": "..." } ],
-  "pagination": {
-    "page": 1, "limit": 20, "totalItems": 30, "totalPages": 2,
-    "hasNextPage": true, "hasPrevPage": false
+#### Register a User
+- **Method & Path**: `POST /auth/register`
+- **Auth**: Public
+- **Request Body**:
+  ```json
+  {
+    "name": "Dev User",
+    "email": "devuser@domain.com",
+    "password": "securepassword123"
   }
-}
-```
+  ```
+- **Example Response (`201 Created`)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "user": {
+        "id": "6a80b37254d36c337a7945e8",
+        "_id": "6a80b37254d36c337a7945e8",
+        "name": "Dev User",
+        "email": "devuser@domain.com"
+      },
+      "token": "eyJhbGciOiJIUzI1NiIsIn..."
+    }
+  }
+  ```
 
-### Bookmarks
-| Method | Endpoint | Auth | Notes |
-|---|---|---|---|
-| POST | `/feed/:id/bookmark` | Private | 409 if already bookmarked |
-| DELETE | `/feed/:id/bookmark` | Private | 404 if not bookmarked |
-| GET | `/bookmarks?page=1&limit=20` | Private | Returns the user's own bookmarks, with populated content |
-
-Send `Authorization: Bearer <token>` for all private routes.
-
-### Error format (consistent across the API)
-```json
-{ "success": false, "message": "Content not found" }
-```
+#### Log In
+- **Method & Path**: `POST /auth/login`
+- **Auth**: Public
+- **Request Body**:
+  ```json
+  {
+    "email": "devuser@domain.com",
+    "password": "securepassword123"
+  }
+  ```
+- **Example Response (`200 OK`)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "user": {
+        "id": "6a80b37254d36c337a7945e8",
+        "name": "Dev User",
+        "email": "devuser@domain.com"
+      },
+      "token": "eyJhbGciOiJIUzI1NiIsIn..."
+    }
+  }
+  ```
 
 ---
 
-## 4. Database Design
+### Feed Endpoints
 
-**User** — `name`, `email` (unique), `password` (bcrypt hash, `select: false` by default).
-**Content** — `title`, `description`, `source`, `url`, `image`, `publishedAt`.
-**Bookmark** — `user` (ref User), `content` (ref Content), timestamps.
+#### Browse Feed (Paginated & Sorted)
+- **Method & Path**: `GET /feed?page=1&limit=10&sort=latest`
+- **Auth**: Public
+- **Query Parameters**:
+  - `page` (integer, default: 1)
+  - `limit` (integer, default: 20, max: 100)
+  - `sort` (`latest` \| `oldest`, default: `latest`)
+- **Example Response (`200 OK`)**:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "6a80b1e3763cfc4a864b0d23",
+        "_id": "6a80b1e3763cfc4a864b0d23",
+        "title": "Understanding the Node.js Event Loop and libuv Under Load",
+        "description": "A deep dive into thread pools, microtask queues, and how asynchronous I/O is managed when handling high concurrency in Node.js services.",
+        "source": "Node.js Core",
+        "url": "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick",
+        "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60",
+        "publishedAt": "2026-08-14T18:37:23.253Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "totalItems": 24,
+      "totalPages": 3,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+  }
+  ```
 
-### Indexes and why
-- `User.email` — unique index. Enforces no duplicate accounts at the DB layer, not just in app code.
-- `Content.publishedAt` (descending) — the feed's default and only real query pattern is "sorted by
-  publish date, paginated." Without this index Mongo would have to collection-scan and sort in memory,
-  which degrades badly as content grows.
-- `Bookmark.{user, content}` — **compound unique index.** This is the key design decision for the
-  bookmarks feature: it guarantees a user can't duplicate-bookmark the same item even under concurrent
-  requests (e.g. a double-click firing two requests at once), because the DB itself rejects the second
-  insert — the app-level duplicate check is a nice error message, not the actual safety net.
-- `Bookmark.{user, createdAt}` — supports `GET /bookmarks` (a user's bookmarks, most recent first)
-  without a full collection scan.
+#### Fetch Single Article
+- **Method & Path**: `GET /feed/:id`
+- **Auth**: Public
+- **Example Response (`200 OK`)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "6a80b1e3763cfc4a864b0d23",
+      "title": "Understanding the Node.js Event Loop and libuv Under Load",
+      "description": "A deep dive into thread pools, microtask queues...",
+      "source": "Node.js Core",
+      "url": "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick",
+      "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60",
+      "publishedAt": "2026-08-14T18:37:23.253Z"
+    }
+  }
+  ```
 
-### Relationships
-Bookmark is a join collection between User and Content (many-to-many via a junction document), rather
-than embedding bookmark IDs as an array inside User. This was chosen because bookmarks have their own
-metadata (`createdAt`), can grow unbounded per user (an embedded array would eventually hit MongoDB's
-16MB document limit at scale), and this shape lets `GET /bookmarks` be a single indexed, paginated query.
+---
+
+### Bookmark Endpoints
+
+#### Save Bookmark
+- **Method & Path**: `POST /feed/:id/bookmark`
+- **Auth**: Private (Requires `Authorization: Bearer <token>`)
+- **Example Response (`201 Created`)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "6a80b37254d36c337a7945ed",
+      "user": "6a80b37254d36c337a7945e8",
+      "content": "6a80b1e3763cfc4a864b0d23",
+      "createdAt": "2026-08-15T18:44:02.326Z"
+    }
+  }
+  ```
+
+#### Remove Bookmark
+- **Method & Path**: `DELETE /feed/:id/bookmark`
+- **Auth**: Private (Requires `Authorization: Bearer <token>`)
+- **Example Response (`200 OK`)**:
+  ```json
+  {
+    "success": true,
+    "message": "Bookmark removed"
+  }
+  ```
+
+#### Get User Bookmarks
+- **Method & Path**: `GET /bookmarks?page=1&limit=20`
+- **Auth**: Private (Requires `Authorization: Bearer <token>`)
+- **Example Response (`200 OK`)**:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "6a80b37254d36c337a7945ed",
+        "user": "6a80b37254d36c337a7945e8",
+        "content": {
+          "id": "6a80b1e3763cfc4a864b0d23",
+          "title": "Understanding the Node.js Event Loop and libuv Under Load",
+          "source": "Node.js Core",
+          "url": "https://nodejs.org/..."
+        },
+        "createdAt": "2026-08-15T18:44:02.326Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "totalItems": 1,
+      "totalPages": 1,
+      "hasNextPage": false,
+      "hasPrevPage": false
+    }
+  }
+  ```
+
+---
+
+## 4. Database Design & Indexes
+
+### Collections
+
+1. **User Collection (`User`)**
+   - **Fields**: `name` (String, required), `email` (String, unique, lowercase, regex-validated), `password` (String, bcrypt hash, `select: false`), timestamps.
+   - **Indexes**:
+     - Unique index on `email`: Enforces account uniqueness at the database engine level.
+
+2. **Content Collection (`Content`)**
+   - **Fields**: `title` (String, required), `description` (String), `source` (String), `url` (String, required), `image` (String), `publishedAt` (Date, required), timestamps.
+   - **Indexes**:
+     - Descending index on `{ publishedAt: -1 }`: Eliminates in-memory sorting costs for paginated feed browsing.
+
+3. **Bookmark Collection (`Bookmark`)**
+   - **Fields**: `user` (ObjectId ref to `User`), `content` (ObjectId ref to `Content`), timestamps.
+   - **Indexes**:
+     - **Compound Unique Index on `{ user: 1, content: 1 }`**: Guarantees zero duplicate bookmarks per user, even under concurrent or rapid duplicate clicks.
+     - **Compound Sort Index on `{ user: 1, createdAt: -1 }`**: Optimizes retrieval of a user's reading list ordered by newest bookmark first.
 
 ---
 
 ## 5. Technical Decisions
 
-1. **Compound unique index over app-level duplicate checking for bookmarks.** App code checks first for
-   a friendlier error message, but the actual guarantee against duplicate bookmarks comes from the
-   MongoDB index — this holds even if two requests race each other, which a plain `findOne` check
-   before `create` would not reliably prevent.
+1. **Database-Level Compound Unique Index for Idempotent Bookmarks**:
+   - Rather than relying solely on application-level `findOne` checks before insertion, duplicate prevention is enforced via MongoDB's unique compound index on `{ user: 1, content: 1 }`. This prevents race conditions when concurrent requests hit the API and gracefully translates duplicate key errors (`code 11000`) into clean `409 Conflict` responses.
 
-2. **JWT over server-side sessions.** No session store to manage, and it fits a decoupled frontend/backend
-   cleanly (the frontend can be deployed anywhere and just needs to attach a bearer token). The trade-off
-   is that a JWT can't be instantly revoked before it expires — acceptable here given the token lifetime
-   is kept relatively short and the assignment's scope doesn't require logout-everywhere semantics.
+2. **Normalized Junction Collection vs. Embedded Arrays**:
+   - Bookmarks are modeled as a standalone relational junction collection rather than embedding bookmark IDs inside an array in the `User` document. This avoids MongoDB's 16MB document size ceiling, keeps user authentication payloads lightweight, and allows bookmarks to carry their own indexed metadata (`createdAt`) with native pagination.
 
-3. **Ownership scoping at the query level, not after fetching.** Every bookmark read/delete filters by
-   `{ user: req.user._id, ... }` directly in the Mongo query, rather than fetching a bookmark by ID and
-   then checking `bookmark.user === req.user._id` in JS. This means a user literally cannot retrieve or
-   affect another user's data — the query just returns nothing rather than relying on an if-check that
-   could be missed in a future edit.
+3. **Query-Level Data Isolation (Ownership Scoping)**:
+   - For all bookmark mutations and reads, filters are strictly scoped to `{ user: req.user._id }` at the database query level rather than fetching documents and checking authorization in application memory. This ensures users cannot inspect or mutate other users' bookmarks.
 
-4. **Seeded content over an external API.** Chose Option A (seeded data) to keep the assignment's actual
-   focus — API design, auth, and data modeling — front and center rather than spending time on third-party
-   API integration, retries, and rate limits, which the brief treats as optional.
+4. **Centralized Error Handling with Async Middleware Wrapper**:
+   - Used an `asyncHandler` higher-order wrapper around controller functions to catch promise rejections automatically, routing all errors through a single `errorHandler` middleware. This guarantees a uniform `{ success: false, message: "..." }` response shape across all endpoints and maps Mongoose `CastError`, validation errors, and auth failures to proper HTTP status codes (`400`, `401`, `404`, `409`, `500`).
 
 ---
 
-## 6. Scaling considerations (how I'd improve this for more users)
+## 6. Project Structure
 
-- Switch offset-based pagination (`skip`/`limit`) to **cursor-based pagination** (e.g. keyed off
-  `publishedAt` + `_id`) — `skip` gets slower as the offset grows because Mongo still has to walk past
-  all skipped documents.
-- Add a **read-through cache** (Redis) in front of the feed endpoint, since feed content changes far less
-  often than it's read.
-- Move to **short-lived access tokens + refresh tokens** instead of a single long-lived JWT, to allow
-  faster revocation.
-- Consider **read replicas** for MongoDB once read traffic (feed browsing) significantly outpaces writes
-  (bookmarking).
-- Rate-limit write endpoints (register, login, bookmark) to prevent abuse.
+```
+content-feed/
+├── backend/
+│   ├── src/
+│   │   ├── config/         # Database connection (db.ts)
+│   │   ├── controllers/    # Route controllers (authController, feedController, bookmarkController)
+│   │   ├── middleware/     # Auth verification (auth.ts) and errorHandler (errorHandler.ts)
+│   │   ├── models/         # Mongoose models (User.ts, Content.ts, Bookmark.ts)
+│   │   ├── routes/         # Express routers (authRoutes, feedRoutes, bookmarkRoutes)
+│   │   ├── utils/          # AppError, asyncHandler, generateToken
+│   │   ├── seed.ts         # Database population script (24 sample articles)
+│   │   ├── app.ts          # Express application setup
+│   │   └── server.ts       # Server entrypoint
+│   ├── .env.example
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Navbar, HeroSection, FeedCard, CodeSection, Footer
+│   │   ├── context/        # AuthContext, ToastContext
+│   │   ├── lib/            # api.ts (fetch client wrapper)
+│   │   ├── pages/          # FeedPage, ArticlePage, BookmarksPage, LoginPage, RegisterPage
+│   │   ├── types/          # TypeScript domain interfaces
+│   │   ├── App.tsx         # Main route configuration
+│   │   └── index.css       # Design tokens & semantic CSS classes
+│   ├── .env.example
+│   └── package.json
+└── README.md
+```
 
 ---
 
-## 7. AI Assistance Disclosure
+## License
 
-Built with the assistance of Claude (Anthropic) for scaffolding structure and boilerplate. All architecture
-decisions, indexing choices, and error-handling patterns are understood and can be explained/defended in
-the interview walkthrough, as required by the assignment brief.
+MIT

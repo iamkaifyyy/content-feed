@@ -12,9 +12,9 @@ export default function BookmarksPage() {
   const navigate = useNavigate();
 
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
@@ -71,27 +71,26 @@ export default function BookmarksPage() {
 
   return (
     <div style={{ maxWidth: "var(--max-width)", margin: "0 auto", padding: "48px 24px 80px" }}>
-      {/* Header */}
-      <div style={styles.header}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "24px", flexWrap: "wrap", borderBottom: "1px solid var(--color-hairline)", paddingBottom: "24px", marginBottom: "36px" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-            <span className="badge-pill">SAVED DISPATCHES</span>
-            <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", color: "var(--color-ash)" }}>
-              {bookmarks.length} {bookmarks.length === 1 ? "ARTICLE" : "ARTICLES"}
+            <span className="badge-pill">BOOKMARKS</span>
+            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
+              {bookmarks.length} {bookmarks.length === 1 ? "SAVED ARTICLE" : "SAVED ARTICLES"}
             </span>
           </div>
           <h1 className="display-xl" style={{ color: "var(--color-ink)" }}>
-            Your Reading List
+            Saved Articles
           </h1>
         </div>
 
         {bookmarks.length > 0 && (
-          <div style={styles.controls}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <input
               type="text"
               className="text-input"
               style={{ width: "220px", height: "36px", fontSize: "13px" }}
-              placeholder="Search saved dispatches…"
+              placeholder="Search saved articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -100,7 +99,7 @@ export default function BookmarksPage() {
               <button
                 onClick={() => setViewMode("grid")}
                 className={`btn-icon ${viewMode === "grid" ? "active" : ""}`}
-                title="Grid"
+                title="Grid View"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="7" height="7" />
@@ -112,7 +111,7 @@ export default function BookmarksPage() {
               <button
                 onClick={() => setViewMode("list")}
                 className={`btn-icon ${viewMode === "list" ? "active" : ""}`}
-                title="List"
+                title="List View"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="8" y1="6" x2="21" y2="6" />
@@ -133,19 +132,19 @@ export default function BookmarksPage() {
           <p style={{ color: "var(--color-accent-red)", fontWeight: 500 }}>{error}</p>
         </div>
       ) : bookmarks.length === 0 ? (
-        <div className="feature-card" style={styles.emptyCard}>
+        <div className="feature-card" style={{ padding: "64px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ fontSize: "32px", marginBottom: "12px" }}>🔖</div>
           <h2 className="heading-md" style={{ marginBottom: "8px" }}>No bookmarks saved yet</h2>
           <p className="body-md" style={{ color: "var(--color-charcoal)", marginBottom: "24px", maxWidth: "400px", textAlign: "center" }}>
-            Explore the developer feed and bookmark articles to build your technical reading queue.
+            Explore the feed and bookmark articles to build your reading list.
           </p>
           <Link to="/" className="btn-primary">
-            Explore All Dispatches →
+            Explore Feed →
           </Link>
         </div>
       ) : filteredBookmarks.length === 0 ? (
         <div className="feature-card" style={{ padding: "48px 24px", textAlign: "center" }}>
-          <p className="body-md">No bookmarks match your search "{searchQuery}".</p>
+          <p className="body-md">No bookmarks match "{searchQuery}".</p>
           <button onClick={() => setSearchQuery("")} className="btn-ghost" style={{ marginTop: "12px" }}>
             Clear Search
           </button>
@@ -166,28 +165,3 @@ export default function BookmarksPage() {
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    gap: "24px",
-    flexWrap: "wrap",
-    borderBottom: "1px solid var(--color-hairline)",
-    paddingBottom: "24px",
-    marginBottom: "36px",
-  },
-  controls: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-  },
-  emptyCard: {
-    padding: "64px 24px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-};
