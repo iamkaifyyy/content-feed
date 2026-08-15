@@ -11,9 +11,18 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "*",
+    origin: (origin, callback) => {
+      // Allow all origins, Vercel deployments, and local development
+      if (!origin || !process.env.CLIENT_URL || process.env.CLIENT_URL === "*" || origin === process.env.CLIENT_URL || origin.endsWith(".vercel.app")) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
   })
 );
+
 app.use(express.json());
 
 if (process.env.NODE_ENV !== "test") {
