@@ -29,13 +29,23 @@ if (process.env.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
 
+// Health checks
 app.get("/api/v1/health", (_req, res) => {
   res.status(200).json({ success: true, status: "ok" });
 });
+app.get("/health", (_req, res) => {
+  res.status(200).json({ success: true, status: "ok" });
+});
 
+// Primary Versioned API Routes (/api/v1)
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/feed", feedRoutes);
 app.use("/api/v1/bookmarks", bookmarkRoutes);
+
+// Fallback Non-versioned Aliases (/auth, /feed, /bookmarks)
+app.use("/auth", authRoutes);
+app.use("/feed", feedRoutes);
+app.use("/bookmarks", bookmarkRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

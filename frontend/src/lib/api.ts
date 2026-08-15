@@ -7,7 +7,8 @@ import {
   CreateArticlePayload,
 } from "../types";
 
-const API_URL = import.meta.env.VITE_API_URL as string || "http://localhost:5001/api/v1";
+const rawApiUrl = (import.meta.env.VITE_API_URL as string || "http://localhost:5001/api/v1").replace(/\/+$/, "");
+const API_URL = rawApiUrl.endsWith("/api/v1") ? rawApiUrl : `${rawApiUrl}/api/v1`;
 
 interface FetchOptions {
   method?: string;
