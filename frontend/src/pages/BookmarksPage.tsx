@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -9,7 +9,6 @@ import FeedCard from "../components/FeedCard";
 export default function BookmarksPage() {
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
-  const navigate = useNavigate();
 
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,21 +19,27 @@ export default function BookmarksPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      navigate("/login");
+      setLoading(false);
       return;
     }
     setLoading(true);
     api
       .getBookmarks(1, 100)
-      .then((res) => setBookmarks(res.data))
+      .then((res) => {
+        // Defensive check to only keep bookmarks with valid content
+        const valid = (res.data || []).filter((b) => b && b.content && (b.content._id || b.content.id));
+        setBookmarks(valid);
+      })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading]);
 
   const handleRemoveBookmark = async (contentId: string): Promise<void> => {
     try {
       await api.removeBookmark(contentId);
-      setBookmarks((prev) => prev.filter((b) => b.content._id !== contentId));
+      setBookmarks((prev) =>
+        prev.filter((b) => b?.content && b.content._id !== contentId && b.content.id !== contentId)
+      );
       showToast("Bookmark removed", "info");
     } catch (err) {
       showToast((err as Error).message || "Failed to remove bookmark", "error");
@@ -43,17 +48,19 @@ export default function BookmarksPage() {
 
   const filteredBookmarks = useMemo(() => {
     return bookmarks.filter((b) => {
-      const q = searchQuery.toLowerCase();
-      return (
-        q === "" ||
-        b.content.title.toLowerCase().includes(q) ||
-        (b.content.description && b.content.description.toLowerCase().includes(q)) ||
-        (b.content.source && b.content.source.toLowerCase().includes(q))
-      );
+      if (!b || !b.content) return false;
+      const q = searchQuery.toLowerCase().trim();
+      if (q === "") return true;
+
+      const titleMatch = b.content.title ? b.content.title.toLowerCase().includes(q) : false;
+      const descMatch = b.content.description ? b.content.description.toLowerCase().includes(q) : false;
+      const sourceMatch = b.content.source ? b.content.source.toLowerCase().includes(q) : false;
+
+      return titleMatch || descMatch || sourceMatch;
     });
   }, [bookmarks, searchQuery]);
 
-  if (authLoading || loading) {
+  if (authLoading || (user && loading)) {
     return (
       <div style={{ maxWidth: "var(--max-width)", margin: "0 auto", padding: "48px 24px" }}>
         <div className="skeleton" style={{ height: "36px", width: "200px", marginBottom: "24px" }} />
@@ -64,6 +71,31 @@ export default function BookmarksPage() {
               <div className="skeleton" style={{ height: "18px", width: "75%" }} />
             </div>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Not signed in state
+  if (!user) {
+    return (
+      <div style={{ maxWidth: "var(--max-width)", margin: "0 auto", padding: "48px 24px 80px" }}>
+        <div className="feature-card" style={{ maxWidth: "560px", margin: "40px auto", padding: "56px 32px", textAlign: "center" }}>
+          <div style={{ fontSize: "36px", marginBottom: "16px" }}>🔖</div>
+          <h1 className="heading-lg" style={{ color: "var(--color-ink)", marginBottom: "10px", fontSize: "26px" }}>
+            Your Reading List
+          </h1>
+          <p className="body-md" style={{ color: "var(--color-charcoal)", marginBottom: "28px", lineHeight: 1.6 }}>
+            Sign in to save articles, manage your personal engineering reading list, and sync across sessions.
+          </p>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <Link to="/login" className="btn-primary" style={{ padding: "10px 24px" }}>
+              Sign In →
+            </Link>
+            <Link to="/register" className="btn-ghost" style={{ padding: "10px 24px" }}>
+              Create Account
+            </Link>
+          </div>
         </div>
       </div>
     );

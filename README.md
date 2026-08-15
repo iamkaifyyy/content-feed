@@ -1,4 +1,4 @@
-# Content Feed
+# OneFeed
 
 A full-stack content aggregation and reading list application built with Node.js, Express, TypeScript, MongoDB, React 18, and Vite.
 
@@ -323,6 +323,12 @@ content-feed/
 │   └── package.json
 └── README.md
 ```
+
+---
+
+## 7. AI Usage
+
+Built primarily using Google Antigravity (agentic IDE) and Claude for scaffolding and verification planning. No ChatGPT was used, so no ChatGPT link is included.
 
 ---
 

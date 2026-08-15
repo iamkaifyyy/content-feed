@@ -58,7 +58,7 @@ export const getBookmarks = asyncHandler(async (req: Request, res: Response): Pr
   const limit = Math.min(Math.max(parseInt(query.limit ?? "20", 10) || 20, 1), 100);
   const skip = (page - 1) * limit;
 
-  const [bookmarks, totalItems] = await Promise.all([
+  const [rawBookmarks, totalItems] = await Promise.all([
     Bookmark.find({ user: userId })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -67,14 +67,17 @@ export const getBookmarks = asyncHandler(async (req: Request, res: Response): Pr
     Bookmark.countDocuments({ user: userId }),
   ]);
 
+  // Cleanly guard against any deleted content references
+  const validBookmarks = rawBookmarks.filter((b) => b && b.content);
+
   res.status(200).json({
     success: true,
-    data: bookmarks,
+    data: validBookmarks,
     pagination: {
       page,
       limit,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
+      totalItems: validBookmarks.length,
+      totalPages: Math.ceil(validBookmarks.length / limit) || 1,
       hasNextPage: page * limit < totalItems,
       hasPrevPage: page > 1,
     },

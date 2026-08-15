@@ -4,6 +4,7 @@ import {
   PaginatedResponse,
   AuthResponse,
   SingleItemResponse,
+  CreateArticlePayload,
 } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL as string || "http://localhost:5001/api/v1";
@@ -49,6 +50,13 @@ export const api = {
 
   getFeedItem: (id: string): Promise<SingleItemResponse<FeedItem>> =>
     apiFetch<SingleItemResponse<FeedItem>>(`/feed/${id}`),
+
+  createArticle: (payload: CreateArticlePayload): Promise<SingleItemResponse<FeedItem>> =>
+    apiFetch<SingleItemResponse<FeedItem>>("/feed", {
+      method: "POST",
+      body: payload,
+      auth: true,
+    }),
 
   register: (payload: {
     name: string;

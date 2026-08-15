@@ -30,7 +30,7 @@ export default function ArticlePage() {
       api
         .getBookmarks(1, 100)
         .then((res) => {
-          const isMarked = res.data.some((b) => b.content._id === id);
+          const isMarked = res.data.some((b) => b.content._id === id || b.content.id === id);
           setBookmarked(isMarked);
         })
         .catch(() => {});
@@ -104,9 +104,10 @@ export default function ArticlePage() {
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 24px 80px" }}>
+      {/* Top Controls */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "36px" }}>
         <button onClick={() => navigate(-1)} className="btn-ghost">
-          ← Back
+          ← Back to Feed
         </button>
 
         <div style={{ display: "flex", gap: "8px" }}>
@@ -129,19 +130,42 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: "36px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <span className="badge-pill">{item.source || "ARTICLE"}</span>
+      {/* Article Header */}
+      <div style={{ marginBottom: "32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "16px" }}>
+          <span className="badge-pill">{item.source || "ENGINEERING"}</span>
+          {item.readTime && (
+            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
+              {item.readTime}
+            </span>
+          )}
           <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
-            {formattedDate}
+            • {formattedDate}
           </span>
+          {item.author && (
+            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>
+              • By {item.author}
+            </span>
+          )}
         </div>
 
-        <h1 className="display-xl" style={{ color: "var(--color-ink)", lineHeight: 1.15 }}>
+        <h1 className="display-xl" style={{ color: "var(--color-ink)", lineHeight: 1.15, marginBottom: "20px" }}>
           {item.title}
         </h1>
+
+        {/* Tags */}
+        {item.tags && item.tags.length > 0 && (
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "12px" }}>
+            {item.tags.map((tag) => (
+              <span key={tag} className="sub-nav-pill" style={{ fontSize: "12px", pointerEvents: "none" }}>
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* Hero Image */}
       {item.image && !imageError && (
         <div style={{ width: "100%", height: "380px", borderRadius: "var(--radius-lg)", overflow: "hidden", marginBottom: "40px", backgroundColor: "var(--color-surface-deep)", border: "1px solid var(--color-hairline-strong)" }}>
           <img
@@ -153,24 +177,75 @@ export default function ArticlePage() {
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-        <div className="feature-card" style={{ borderLeft: "2px solid var(--color-primary)", padding: "24px 28px" }}>
-          <p className="body-lg" style={{ color: "var(--color-ink)", margin: 0 }}>
+      {/* Article Content */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+        {/* Executive Summary Card */}
+        <div className="feature-card" style={{ borderLeft: "3px solid var(--color-primary)", padding: "24px 28px", backgroundColor: "var(--color-surface-deep)" }}>
+          <h3 style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-primary)", marginBottom: "8px", fontFamily: "var(--font-mono)", fontWeight: 600 }}>
+            Executive Overview
+          </h3>
+          <p className="body-lg" style={{ color: "var(--color-ink)", margin: 0, lineHeight: 1.6 }}>
             {item.description}
           </p>
         </div>
 
-        <div style={{ color: "var(--color-body)", lineHeight: 1.7 }}>
-          <p className="body-md">
-            This article explores technical architecture concepts, operational considerations, and trade-offs in modern software engineering. Review the original source below for full discussions, benchmarks, and referenced code repositories.
-          </p>
-        </div>
+        {/* Full Detailed Body Content */}
+        {item.body ? (
+          <div className="article-body-content" style={{ color: "var(--color-body)", fontSize: "16px", lineHeight: 1.8 }}>
+            {item.body.split("\n\n").map((block, idx) => {
+              if (block.startsWith("### ")) {
+                return (
+                  <h3 key={idx} style={{ color: "var(--color-ink)", fontSize: "20px", fontWeight: 600, marginTop: "32px", marginBottom: "12px" }}>
+                    {block.replace("### ", "")}
+                  </h3>
+                );
+              }
 
-        <div className="feature-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", marginTop: "20px", padding: "24px 28px" }}>
+              if (block.startsWith("```")) {
+                const codeText = block.replace(/```[a-z]*\n?/gi, "").replace(/```$/gi, "");
+                return (
+                  <div key={idx} className="code-window" style={{ margin: "20px 0", padding: "16px" }}>
+                    <pre style={{ margin: 0, overflowX: "auto", fontSize: "13.5px", color: "var(--color-body)" }}>
+                      <code className="code-font">{codeText}</code>
+                    </pre>
+                  </div>
+                );
+              }
+
+              if (block.match(/^[0-9]\. /m) || block.match(/^[-*] /m)) {
+                const lines = block.split("\n");
+                return (
+                  <ul key={idx} style={{ paddingLeft: "24px", margin: "16px 0", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {lines.map((line, lIdx) => (
+                      <li key={lIdx} style={{ color: "var(--color-charcoal)", lineHeight: 1.6 }}>
+                        <span dangerouslySetInnerHTML={{ __html: line.replace(/^[0-9]\.\s*|^[-*]\s*/, "").replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--color-ink)">$1</strong>').replace(/`([^`]+)`/g, '<code class="code-font" style="background:var(--color-surface-card);padding:2px 6px;border-radius:4px;font-size:13px;border:1px solid var(--color-hairline)">$1</code>') }} />
+                      </li>
+                    ))}
+                  </ul>
+                );
+              }
+
+              return (
+                <p key={idx} style={{ marginBottom: "20px", color: "var(--color-charcoal)" }}>
+                  <span dangerouslySetInnerHTML={{ __html: block.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--color-ink)">$1</strong>').replace(/`([^`]+)`/g, '<code class="code-font" style="background:var(--color-surface-card);padding:2px 6px;border-radius:4px;font-size:13px;border:1px solid var(--color-hairline)">$1</code>') }} />
+                </p>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ color: "var(--color-body)", lineHeight: 1.75 }}>
+            <p className="body-md">
+              {item.description}
+            </p>
+          </div>
+        )}
+
+        {/* Publisher & Source Link Footer Card */}
+        <div className="feature-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", marginTop: "24px", padding: "24px 28px" }}>
           <div>
-            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>PUBLISHED BY</span>
-            <h3 style={{ margin: "4px 0", fontSize: "17px", fontWeight: 500 }}>{item.source}</h3>
-            <p className="caption">{formattedDate}</p>
+            <span className="caption" style={{ fontFamily: "var(--font-mono)" }}>ORIGINAL PUBLISHER</span>
+            <h3 style={{ margin: "4px 0", fontSize: "17px", fontWeight: 500, color: "var(--color-ink)" }}>{item.source}</h3>
+            <p className="caption">{item.author ? `Written by ${item.author} • ` : ""}{formattedDate}</p>
           </div>
 
           <a
@@ -179,7 +254,7 @@ export default function ArticlePage() {
             rel="noreferrer"
             className="btn-primary"
           >
-            Read Full Article ↗
+            Read Full Article on {item.source} ↗
           </a>
         </div>
       </div>

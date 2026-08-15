@@ -3,7 +3,11 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export interface IContent extends Document {
   title: string;
   description?: string;
+  body?: string;
   source?: string;
+  author?: string;
+  tags?: string[];
+  readTime?: string;
   url: string;
   image?: string;
   publishedAt: Date;
@@ -22,9 +26,25 @@ const contentSchema = new Schema<IContent>(
       type: String,
       trim: true,
     },
+    body: {
+      type: String,
+      trim: true,
+    },
     source: {
       type: String,
       trim: true,
+    },
+    author: {
+      type: String,
+      trim: true,
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    readTime: {
+      type: String,
+      default: "5 min read",
     },
     url: {
       type: String,

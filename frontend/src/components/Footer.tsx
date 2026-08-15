@@ -1,56 +1,147 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Footer() {
+  const location = useLocation();
+
+  const scrollToCode = (e: React.MouseEvent) => {
+    if (location.pathname === "/") {
+      e.preventDefault();
+      document.getElementById("code-section")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-grid">
+          {/* Brand & Mission */}
           <div className="site-footer-col">
-            <div className="site-brand">
+            <Link to="/" className="site-brand" style={{ textDecoration: "none" }}>
               <span className="status-dot" />
-              <span>CONTENT FEED</span>
-            </div>
-            <p className="body-sm" style={{ maxWidth: "280px" }}>
-              Curated engineering insights, distributed systems architecture, and backend articles.
+              <span>ONEFEED</span>
+            </Link>
+            <p className="body-sm" style={{ maxWidth: "280px", marginTop: "12px", lineHeight: 1.6 }}>
+              Curated engineering insights, distributed systems architecture, and database internals.
             </p>
             <div style={{ marginTop: "16px" }}>
-              <span className="badge-pill">
+              <a
+                href="http://localhost:5001/api/v1/health"
+                target="_blank"
+                rel="noreferrer"
+                className="badge-pill"
+                style={{ textDecoration: "none", display: "inline-flex" }}
+                title="Inspect API health status"
+              >
                 <span className="status-dot" />
-                <span style={{ fontSize: "11px" }}>API Online</span>
-              </span>
+                <span style={{ fontSize: "11px" }}>API Online (v1)</span>
+              </a>
             </div>
           </div>
 
+          {/* Navigation Links */}
           <div className="site-footer-col">
-            <h4 style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", marginBottom: "4px" }}>Navigation</h4>
-            <Link to="/" className="body-sm">Home Feed</Link>
-            <Link to="/bookmarks" className="body-sm">Bookmarks</Link>
-            <a href="#code-section" className="body-sm">API Reference</a>
-            <a href="http://localhost:5001/api/v1/feed" target="_blank" rel="noreferrer" className="body-sm">Feed Endpoint</a>
+            <h4 style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-ink)", marginBottom: "6px" }}>
+              Navigation
+            </h4>
+            <Link to="/" className="body-sm" style={{ textDecoration: "none" }}>
+              Home Feed
+            </Link>
+            <Link to="/bookmarks" className="body-sm" style={{ textDecoration: "none" }}>
+              Saved Bookmarks
+            </Link>
+            <a href="/#code-section" onClick={scrollToCode} className="body-sm" style={{ textDecoration: "none" }}>
+              API Reference
+            </a>
           </div>
 
+          {/* Resources & Source */}
           <div className="site-footer-col">
-            <h4 style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", marginBottom: "4px" }}>Resources</h4>
-            <a href="https://github.com" target="_blank" rel="noreferrer" className="body-sm">GitHub Repository</a>
-            <Link to="/login" className="body-sm">Sign In</Link>
-            <Link to="/register" className="body-sm">Create Account</Link>
+            <h4 style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-ink)", marginBottom: "6px" }}>
+              Resources
+            </h4>
+            <a
+              href="https://github.com/iamkaifyyy/content-feed"
+              target="_blank"
+              rel="noreferrer"
+              className="body-sm"
+              style={{ textDecoration: "none" }}
+            >
+              GitHub Repository ↗
+            </a>
+            <a
+              href="https://github.com/iamkaifyyy/content-feed#readme"
+              target="_blank"
+              rel="noreferrer"
+              className="body-sm"
+              style={{ textDecoration: "none" }}
+            >
+              Documentation & Setup ↗
+            </a>
+            <Link to="/login" className="body-sm" style={{ textDecoration: "none" }}>
+              Sign In
+            </Link>
+            <Link to="/register" className="body-sm" style={{ textDecoration: "none" }}>
+              Create Account
+            </Link>
           </div>
 
+          {/* Socials / Connect */}
           <div className="site-footer-col">
-            <h4 style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", marginBottom: "4px" }}>About</h4>
-            <span className="body-sm">Architecture Overview</span>
-            <span className="body-sm">REST Specifications</span>
-            <span className="body-sm">System Status</span>
+            <h4 style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-ink)", marginBottom: "6px" }}>
+              Socials
+            </h4>
+            <a
+              href="https://github.com/iamkaifyyy"
+              target="_blank"
+              rel="noreferrer"
+              className="body-sm"
+              style={{ textDecoration: "none" }}
+            >
+              GitHub (@iamkaifyyy) ↗
+            </a>
+            <a
+              href="https://linkedin.com/in/iamkaifyyy"
+              target="_blank"
+              rel="noreferrer"
+              className="body-sm"
+              style={{ textDecoration: "none" }}
+            >
+              LinkedIn ↗
+            </a>
+            <a
+              href="mailto:mkaifm728@gmail.com"
+              className="body-sm"
+              style={{ textDecoration: "none" }}
+            >
+              Email (mkaifm728@gmail.com) ↗
+            </a>
           </div>
         </div>
 
-        <div className="site-footer-bottom">
-          <p className="caption">
-            © {new Date().getFullYear()} Content Feed. Built with Node.js, Express, MongoDB, and React.
+        {/* Bottom Bar */}
+        <div className="site-footer-bottom" style={{ marginTop: "40px", paddingTop: "20px", borderTop: "1px solid var(--color-hairline)" }}>
+          <p className="caption" style={{ margin: 0 }}>
+            © {new Date().getFullYear()} OneFeed. Open-source under MIT License.
           </p>
-          <div style={{ display: "flex", gap: "16px" }}>
-            <span className="caption">Privacy</span>
-            <span className="caption">Terms</span>
+          <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+            <a
+              href="https://github.com/iamkaifyyy/content-feed/blob/main/LICENSE"
+              target="_blank"
+              rel="noreferrer"
+              className="caption"
+              style={{ textDecoration: "none", color: "var(--color-mute)" }}
+            >
+              License (MIT)
+            </a>
+            <a
+              href="https://github.com/iamkaifyyy/content-feed"
+              target="_blank"
+              rel="noreferrer"
+              className="caption"
+              style={{ textDecoration: "none", color: "var(--color-mute)" }}
+            >
+              GitHub Repository
+            </a>
           </div>
         </div>
       </div>

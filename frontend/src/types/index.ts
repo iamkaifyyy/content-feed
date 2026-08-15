@@ -1,17 +1,37 @@
 export interface FeedItem {
   _id: string;
+  id?: string;
   title: string;
   description: string;
+  body?: string;
   source: string;
+  author?: string;
+  tags?: string[];
+  readTime?: string;
   url: string;
   image?: string;
   publishedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateArticlePayload {
+  title: string;
+  description: string;
+  body: string;
+  source?: string;
+  author?: string;
+  tags?: string[];
+  image?: string;
+  url?: string;
 }
 
 export interface Bookmark {
   _id: string;
+  user?: string;
   content: FeedItem;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface User {

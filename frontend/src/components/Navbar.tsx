@@ -24,7 +24,7 @@ export default function Navbar() {
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <Link to="/" className="site-brand">
             <span className="status-dot" />
-            <span>CONTENT FEED</span>
+            <span>ONEFEED</span>
           </Link>
 
           <nav className="site-nav" aria-label="Main Navigation">
@@ -34,14 +34,12 @@ export default function Navbar() {
             >
               Feed
             </Link>
-            {user && (
-              <Link
-                to="/bookmarks"
-                className={`sub-nav-pill ${isActive("/bookmarks") ? "active" : ""}`}
-              >
-                Bookmarks
-              </Link>
-            )}
+            <Link
+              to="/bookmarks"
+              className={`sub-nav-pill ${isActive("/bookmarks") ? "active" : ""}`}
+            >
+              Bookmarks
+            </Link>
             <a
               href="#code-section"
               onClick={(e) => {
@@ -60,6 +58,9 @@ export default function Navbar() {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {user ? (
             <>
+              <Link to="/publish" className="btn-primary" style={{ padding: "7px 14px", fontSize: "13px" }}>
+                + Write
+              </Link>
               <Link to="/bookmarks" className="site-user-badge" title="View your bookmarks">
                 <span style={{ color: "var(--color-accent-green)", fontSize: "10px" }}>●</span>
                 <span>{user.name}</span>
@@ -100,11 +101,12 @@ export default function Navbar() {
           <Link to="/" onClick={() => setMobileMenuOpen(false)} style={{ padding: "6px 0" }}>
             Feed
           </Link>
-          {user && (
-            <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} style={{ padding: "6px 0" }}>
-              Bookmarks
-            </Link>
-          )}
+          <Link to="/bookmarks" onClick={() => setMobileMenuOpen(false)} style={{ padding: "6px 0" }}>
+            Bookmarks
+          </Link>
+          <Link to="/publish" onClick={() => setMobileMenuOpen(false)} style={{ padding: "6px 0" }}>
+            + Write Article
+          </Link>
           {!user ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
               <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="btn-ghost" style={{ justifyContent: "center" }}>

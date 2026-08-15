@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div style={{ textAlign: "left", marginBottom: "28px" }}>
           <div className="site-brand" style={{ marginBottom: "12px" }}>
             <span className="status-dot" />
-            <span>CONTENT FEED</span>
+            <span>ONEFEED</span>
           </div>
           <h1 className="display-xl" style={{ color: "var(--color-ink)", marginBottom: "8px", fontSize: "32px" }}>
             Sign in
