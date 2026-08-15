@@ -42,13 +42,15 @@ const contentSchema = new Schema<IContent>(
   { timestamps: true }
 );
 
-// This index supports the default feed query: sort by publishedAt (newest first)
-// with pagination. Without it, Mongo would collection-scan + in-memory sort as
-// the dataset grows, which doesn't scale.
 contentSchema.index({ publishedAt: -1 });
 
-const Content: Model<IContent> = mongoose.model<IContent>(
-  "Content",
-  contentSchema
-);
+contentSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_doc, ret: any) => {
+    ret.id = ret._id;
+    return ret;
+  },
+});
+
+const Content: Model<IContent> = mongoose.model<IContent>("Content", contentSchema);
 export default Content;

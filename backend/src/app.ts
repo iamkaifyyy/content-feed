@@ -15,20 +15,19 @@ app.use(
   })
 );
 app.use(express.json());
+
 if (process.env.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
 
 app.get("/api/v1/health", (_req, res) => {
-  res.status(200).json({ success: true, message: "API is healthy" });
+  res.status(200).json({ success: true, status: "ok" });
 });
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/feed", feedRoutes);
 app.use("/api/v1/bookmarks", bookmarkRoutes);
 
-// 404 handler for unmatched routes, then the central error handler.
-// Order matters: notFound must come after all real routes, errorHandler must be last.
 app.use(notFound);
 app.use(errorHandler);
 

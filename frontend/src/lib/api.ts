@@ -6,7 +6,6 @@ import {
   SingleItemResponse,
 } from "../types";
 
-// Vite exposes env vars via import.meta.env (prefix: VITE_)
 const API_URL = import.meta.env.VITE_API_URL as string || "http://localhost:5001/api/v1";
 
 interface FetchOptions {
@@ -15,10 +14,6 @@ interface FetchOptions {
   auth?: boolean;
 }
 
-// A single fetch wrapper used by every page. It:
-// - prefixes the base API URL
-// - attaches the JWT (from localStorage) if present
-// - throws a normal Error with the server's message on failure
 async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
   const { method = "GET", body, auth = false } = options;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
